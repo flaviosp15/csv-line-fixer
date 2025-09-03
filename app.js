@@ -92,36 +92,33 @@ class App extends CSVRules {
     });
   }
 
-  async isValidFile(path) {
-    try {
-      this.isFileExtensionAccepted(path);
-
-      this.isValidPath(path);
-
-      return false;
-    } catch (err) {
-      return true;
-    }
-  }
-
   async makeQuestions() {
+    let isValid = false;
+
     this.terminal = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
 
-    while (await this.isValidFile(this.path)) {
+    while (!isValid) {
       this.path = await this.terminal.question('Enter the path of your input file: ');
+
+      try {
+        isValid = await this.validateFilePath(this.path);
+      } catch (err) {
+        console.log('\n❌ Error:', err.message);
+        console.log('Please enter a valid file path.\n');
+      }
     }
     // this.changeSeparator = await this.terminal.question('Do you want change the separator? (y or n): ');
     // this.chooseSeparator = await this.terminal.question('Inform a separator you wish to change to: ');
   }
 
   async init() {
-    await this.makeQuestions();
-
     try {
       let startTime;
+
+      await this.makeQuestions();
 
       this.setInput(this.path);
       this.setOutput(this.path);
@@ -138,7 +135,7 @@ class App extends CSVRules {
       const path = regexErrorStack[1];
       const line = regexErrorStack[2];
 
-      console.error(`Error 💥`);
+      console.error(`❌ Error`);
       console.error('Message:', err.message);
       console.error(`Path: ${path}`);
       console.error(`Line: ${line}`);

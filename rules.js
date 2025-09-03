@@ -11,24 +11,30 @@ module.exports = class CSVRules {
     return totalQuotes % 2 === 1 ? true : false;
   }
 
-  isFileExtensionAccepted(path) {
-    const hasRequiredExtension = /(.csv|.CSV)$/.test(path);
-
-    if (!hasRequiredExtension) {
-      console.log("This file doesn't have the required extension");
-
-      throw new Error("This file doesn't have the required extension");
+  async validateFilePath(path) {
+    if (!/(\.csv|\.CSV)$/.test(path)) {
+      throw new Error('File must have .csv or .CSV extension');
     }
-  }
 
-  isValidPath(path) {
-    const existsPath = fs.access(path, fs.constants.F_OK);
-
-    if (!existsPath) {
-      console.log("This path doesn't exists.");
-
-      throw new Error("This path doesn't exists.");
+    try {
+      await fs.promises.access(path, fs.constants.F_OK | fs.constants.R_OK);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        throw new Error('File does not exist');
+      } else if (err.code === 'EACCES') {
+        throw new Error('No read permission for this file');
+      } else {
+        throw new Error('Unable to access file: ' + err.message);
+      }
     }
+
+    const stats = await fs.promises.stat(path);
+
+    if (!stats.isFile()) {
+      throw new Error('Path is a directory, not a file');
+    }
+
+    return true;
   }
 
   isAllValuesEmpty(line, separator) {
