@@ -11,7 +11,7 @@ A Node.js application to fix and format CSV files with common issues like unclos
 
 ### Installation
 
-#### Clone from Repository
+Clone from Repository
 
 ```bash
 # Clone the repository
